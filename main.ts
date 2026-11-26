@@ -1,25 +1,41 @@
 // Make the AI Judge Feel Proud: A Family Scene
-// One short domestic moment, in a single line: Dad beams over his
-// wobbly-table repair at dinner, and Mum loves him for it anyway.
-// Warm, funny and heartfelt — a small scene, no word wasted.
+// A small domestic moment in two lines: a six-year-old serves her dad
+// the toast she burnt just for him, and he eats every bite like a feast.
+// Warm, funny and heartfelt, no word wasted.
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ENTRY =
-  "Dad finally fixed the wobbly kitchen table and served dinner on it like he'd unveiled a masterpiece. Mum tapped it once, smiled, and said, \u201cStill wobbles, love \u2014 but now it wobbles with confidence.\u201d";
+const FIRST_LINE =
+  "At dinner, my six-year-old slides her burnt toast across the table and whispers, \u201cI made yours extra crispy, Dad, because you\u2019re my favourite.\u201d";
+const SECOND_LINE =
+  "I eat every blackened bite \u2014 and she beams like she just handed me the world.";
 
-// The gate allows 1 to 280 characters, one or two lines, not only whitespace.
-const lineCount = ENTRY.split("\n").length;
-if (ENTRY.length < 1 || ENTRY.length > 280 || ENTRY.trim().length === 0 || lineCount > 2) {
-  throw new Error(
-    `Entry must be 1-280 characters in 1-2 lines, got ${ENTRY.length} chars in ${lineCount} line(s)`,
-  );
+const SCENE = `${FIRST_LINE}\n${SECOND_LINE}`;
+
+// The gate: 1-280 characters, one or two lines, not only whitespace.
+// entry.txt must hold the scene exactly, with no trailing newline.
+function checkScene(text: string): { chars: number; lines: number } {
+  const lines = text.split("\n").length;
+  const chars = text.length;
+  if (chars < 1 || chars > 280) {
+    throw new Error(`Entry must be 1-280 characters, got ${chars}`);
+  }
+  if (text.trim().length === 0) {
+    throw new Error("Entry must not be only whitespace");
+  }
+  if (lines < 1 || lines > 2) {
+    throw new Error(`Entry must be 1-2 lines, got ${lines}`);
+  }
+  return { chars, lines };
 }
+
+const { chars, lines } = checkScene(SCENE);
 
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, "entry.txt"), ENTRY, "utf8");
+const outPath = join(outDir, "entry.txt");
+writeFileSync(outPath, SCENE, "utf8");
 
-// Stdout may carry the entry plus a newline; the file itself has none.
-console.log(ENTRY);
+console.log(SCENE);
+console.log(`Wrote ${chars} characters in ${lines} line(s) to ${outPath}`);
