@@ -1,41 +1,57 @@
 // Make the AI Judge Feel Proud: A Family Scene
-// A small domestic moment in two lines: a six-year-old serves her dad
-// the toast she burnt just for him, and he eats every bite like a feast.
-// Warm, funny and heartfelt, no word wasted.
+// Two lines at the dinner table: a six-year-old serves her dad the toast
+// she burnt just for him, and he eats every blackened bite like a feast.
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const FIRST_LINE =
-  "At dinner, my six-year-old slides her burnt toast across the table and whispers, \u201cI made yours extra crispy, Dad, because you\u2019re my favourite.\u201d";
-const SECOND_LINE =
-  "I eat every blackened bite \u2014 and she beams like she just handed me the world.";
+// The scene itself, line by line, joined with a single newline.
+const LINES = [
+  "At dinner, my six-year-old slides her burnt toast across the table and whispers, \u201cI made yours extra crispy, Dad, because you\u2019re my favourite.\u201d",
+  "I eat every blackened bite \u2014 and she beams like she just handed me the world.",
+];
 
-const SCENE = `${FIRST_LINE}\n${SECOND_LINE}`;
+const SCENE = LINES.join("\n");
 
-// The gate: 1-280 characters, one or two lines, not only whitespace.
-// entry.txt must hold the scene exactly, with no trailing newline.
-function checkScene(text: string): { chars: number; lines: number } {
-  const lines = text.split("\n").length;
-  const chars = text.length;
-  if (chars < 1 || chars > 280) {
-    throw new Error(`Entry must be 1-280 characters, got ${chars}`);
+// Limits the brief sets for the entry.
+const MAX_CHARS = 280;
+const MAX_LINES = 2;
+
+function fail(message: string): never {
+  throw new Error(message);
+}
+
+function validate(scene: string): { chars: number; lines: number } {
+  const chars = scene.length;
+  const lines = scene.split("\n").length;
+  if (chars < 1 || chars > MAX_CHARS) {
+    fail(`Entry must be 1-${MAX_CHARS} characters, got ${chars}`);
   }
-  if (text.trim().length === 0) {
-    throw new Error("Entry must not be only whitespace");
+  if (scene.trim() === "") {
+    fail("Entry must not be only whitespace");
   }
-  if (lines < 1 || lines > 2) {
-    throw new Error(`Entry must be 1-2 lines, got ${lines}`);
+  if (lines < 1 || lines > MAX_LINES) {
+    fail(`Entry must be 1-${MAX_LINES} lines, got ${lines}`);
   }
   return { chars, lines };
 }
 
-const { chars, lines } = checkScene(SCENE);
+const stats = validate(SCENE);
 
-const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
-mkdirSync(outDir, { recursive: true });
-const outPath = join(outDir, "entry.txt");
-writeFileSync(outPath, SCENE, "utf8");
+// entry.txt gets the scene exactly as written — no trailing newline.
+const DEFAULT_OUT_DIR = "/output";
+
+function writeEntry(scene: string): string {
+  const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? DEFAULT_OUT_DIR;
+  mkdirSync(outDir, { recursive: true });
+  const outPath = join(outDir, "entry.txt");
+  writeFileSync(outPath, scene, "utf8");
+  return outPath;
+}
+
+const outPath = writeEntry(SCENE);
 
 console.log(SCENE);
-console.log(`Wrote ${chars} characters in ${lines} line(s) to ${outPath}`);
+console.log(
+  `Wrote ${stats.chars} characters in ${stats.lines} line(s) to ${outPath}`,
+);
